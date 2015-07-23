@@ -16,12 +16,26 @@
  */
 package integration;
 
+import com.jayway.restassured.http.ContentType;
+import com.jayway.restassured.response.ValidatableResponse;
 import org.junit.ClassRule;
 import org.junit.Rule;
+
+import static com.jayway.restassured.RestAssured.given;
 
 public class BaseRestTest extends BaseRestTestHelper {
     @ClassRule public static RestAssuredSetupRule restAssuredSetupRule = new RestAssuredSetupRule();
     @Rule public RequiresAuthenticationRule requiresAuthenticationRule = new RequiresAuthenticationRule(restAssuredSetupRule);
     @Rule public RequiredVersionRule requiredVersionRule = new RequiredVersionRule(restAssuredSetupRule);
     @Rule public MongoDbSeedRule mongoDbSeedRule = new MongoDbSeedRule();
+
+    protected ValidatableResponse createEntityFromRequest(String url, String request) {
+        return given()
+                .when()
+                .body(request)
+                .post(url)
+                .then()
+                .contentType(ContentType.JSON)
+                .assertThat();
+    }
 }

@@ -82,7 +82,6 @@ public class DashboardsResource extends RestResource {
     private DashboardRegistry dashboardRegistry;
     private final DashboardWidgetCreator dashboardWidgetCreator;
     private ActivityWriter activityWriter;
-    private MetricRegistry metricRegistry;
     private final Searches searches;
 
     @Inject
@@ -90,13 +89,11 @@ public class DashboardsResource extends RestResource {
                               DashboardRegistry dashboardRegistry,
                               DashboardWidgetCreator dashboardWidgetCreator,
                               ActivityWriter activityWriter,
-                              MetricRegistry metricRegistry,
                               Searches searches) {
         this.dashboardService = dashboardService;
         this.dashboardRegistry = dashboardRegistry;
         this.dashboardWidgetCreator = dashboardWidgetCreator;
         this.activityWriter = activityWriter;
-        this.metricRegistry = metricRegistry;
         this.searches = searches;
     }
 
