@@ -1,0 +1,12 @@
+{
+  "description" : "Search histogram",
+  "type" : "search_result_chart",
+  "cache_time" : 10,
+  "config" : {
+    "interval" : "minute",
+    "query" : "*",
+    "range" : 300,
+    "range_type" : "relative",
+    "stream_id" : "552b92b2e4b0c055e41ffb8e"
+  }
+}

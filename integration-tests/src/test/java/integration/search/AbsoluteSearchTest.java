@@ -27,7 +27,7 @@ import static com.jayway.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiresAuthentication
-public class AbsoluteSearchResourceTest extends RestTestIncludingElasticsearch {
+public class AbsoluteSearchTest extends RestTestIncludingElasticsearch {
     @Test
     @UsingDataSet(locations = "searchForExistingKeyword.json")
     public void searchForAllMessages() {

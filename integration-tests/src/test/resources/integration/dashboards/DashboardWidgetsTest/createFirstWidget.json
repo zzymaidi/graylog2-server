@@ -1,0 +1,15 @@
+{
+  "dashboards": [
+    {
+      "_id": {
+        "$oid": "55784ee43b0ca6697d0da555"
+      },
+      "title": "Foo",
+      "description": "foo",
+      "created_at": {
+        "$date": "2015-06-10T14:51:16.073Z"
+      },
+      "creator_user_id": "admin"
+    }
+  ]
+}

@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiresAuthentication
 @RequiresVersion(">=1.1.0")
 @MongoDbSeed
-public class DashboardsResourceTest extends BaseRestTest {
+public class DashboardsTest extends BaseRestTest {
     private static final String baseUrl = "/dashboards";
 
     @Test
