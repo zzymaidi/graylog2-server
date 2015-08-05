@@ -121,6 +121,40 @@ public class DashboardsTest extends BaseRestTest {
         assertThat(otherDashboard.getString("description")).isEqualTo("test");
     }
 
+    @Test
+    @MongoDbSeed(locations = "twoSimpleDashboards")
+    public void deleteDashboard() throws Exception {
+        final String dashboardId = "5592c318fbeafefafa471f58";
+        final int beforeCount = getDashboardCount();
+
+        given()
+                .when()
+                .delete(baseUrl + "/" + dashboardId)
+                .then()
+                .statusCode(200);
+
+        final int afterCount = getDashboardCount();
+
+        assertThat(afterCount).isLessThan(beforeCount);
+    }
+
+    @Test
+    @MongoDbSeed(locations = "twoSimpleDashboards")
+    public void deleteNonexistingDashboardShouldFail() throws Exception {
+        final String dashboardId = "5592c318fbeafefafa471f57";
+        final int beforeCount = getDashboardCount();
+
+        given()
+                .when()
+                .delete(baseUrl + "/" + dashboardId)
+                .then()
+                .statusCode(404);
+
+        final int afterCount = getDashboardCount();
+
+        assertThat(afterCount).isEqualTo(beforeCount);
+    }
+
     private int getDashboardCount() {
         final JsonPath response = given()
                 .when()
