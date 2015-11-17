@@ -1,0 +1,56 @@
+#!/bin/bash
+
+CMD=$1
+PS=${PS:=$(which ps)}
+
+# default java
+JAVA_CMD=${JAVA_CMD:=$(which java)}
+
+die() {
+    echo $*
+    exit 1
+}
+
+if [ -n "$JAVA_HOME" ]
+then
+    # try to use $JAVA_HOME
+    if [ -x "$JAVA_HOME"/bin/java ]
+    then
+        JAVA_CMD="$JAVA_HOME"/bin/java
+    else
+        die "$JAVA_HOME"/bin/java is not executable
+    fi
+fi
+
+# resolve links - $0 may be a softlink
+GRAYLOGCTL="$0"
+
+while [ -h "$GRAYLOGCTL" ]; do
+    ls=$(ls -ld "$GRAYLOGCTL")
+    link=$(expr "$ls" : '.*-> \(.*\)$')
+    if expr "$link" : '/.*' > /dev/null; then
+        GRAYLOGCTL="$link"
+    else
+        GRAYLOGCTL=$(dirname "$GRAYLOGCTL")/"$link"
+    fi
+done
+
+# take variables from environment if set
+GRAYLOGCTL_DIR=${GRAYLOGCTL_DIR:=$(dirname "$GRAYLOGCTL")}
+GRAYLOG_SERVER_JAR=${GRAYLOG_SERVER_JAR:=graylog.jar}
+GRAYLOG_CONF=${GRAYLOG_CONF:=/etc/graylog/server/server.conf}
+GRAYLOG_PID=${GRAYLOG_PID:=/tmp/graylog.pid}
+LOG4J=${LOG4J:=}
+DEFAULT_JAVA_OPTS="-Djava.library.path=${GRAYLOGCTL_DIR}/../lib/sigar -Xms1g -Xmx1g -XX:NewRatio=1 -XX:PermSize=128m -XX:MaxPermSize=256m -server -XX:+ResizeTLAB -XX:+UseConcMarkSweepGC -XX:+CMSConcurrentMTEnabled -XX:+CMSClassUnloadingEnabled -XX:+UseParNewGC -XX:-OmitStackTraceInFastThrow"
+JAVA_OPTS="${JAVA_OPTS:="$DEFAULT_JAVA_OPTS"}"
+
+export GRAYLOG2_ELASTICSEARCH_CLUSTER_NAME=${ES_CLUSTER_NAME:=graylog_test}
+export GRAYLOG2_ELASTICSEARCH_DISCOVERY_ZEN_PING_UNICAST_HOSTS="${ES_PORT_9300_TCP_ADDR}:${ES_PORT_9300_TCP_PORT}"
+export GRAYLOG2_MONGODB_URI="mongodb://${MONGO_PORT_27017_TCP_ADDR}:${MONGO_PORT_27017_TCP_PORT}/${MONGODB_DATABASE}"
+export GRAYLOG2_ELASTICSEARCH_NETWORK_HOST=${GRAYLOG_ELASTICSEARCH_HOST:=127.0.0.1}
+
+env | sort
+
+echo "Starting graylog-server for integration tests"
+cd "$GRAYLOGCTL_DIR/.."
+"${JAVA_CMD}" ${JAVA_OPTS} ${LOG4J} -jar "${GRAYLOG_SERVER_JAR}" server -f "${GRAYLOG_CONF}" -p "${GRAYLOG_PID}"

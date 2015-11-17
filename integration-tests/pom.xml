@@ -17,7 +17,8 @@
   ~ You should have received a copy of the GNU General Public License
   ~ along with Graylog.  If not, see <http://www.gnu.org/licenses />.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <prerequisites>
         <maven>3.1.0</maven>
@@ -44,44 +45,27 @@
     </licenses>
 
     <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
         <skip.integration.tests>true</skip.integration.tests>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <it.elasticsearch.docker.image>elasticsearch</it.elasticsearch.docker.image>
+        <it.elasticsearch.docker.version>2.1</it.elasticsearch.docker.version>
+        <it.elasticsearch.cluster_name>graylog_test</it.elasticsearch.cluster_name>
+        <it.mongodb.docker.image>mongo</it.mongodb.docker.image>
+        <it.mongodb.docker.version>3.0</it.mongodb.docker.version>
+        <it.mongodb.docker.database>graylog_test</it.mongodb.docker.database>
     </properties>
 
     <dependencies>
-        <!-- Logging dependencies -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jul-to-slf4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>log4j-over-slf4j</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.zafarkhaja</groupId>
             <artifactId>java-semver</artifactId>
+            <version>0.9.0</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.jayway.restassured</groupId>
@@ -96,14 +80,17 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-joda-time</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -123,7 +110,7 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
-	        <scope>test</scope>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.joschi.nosqlunit</groupId>
@@ -138,28 +125,200 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
             </plugin>
-            <!-- override to use the log4j.xml, not test-log4j.xml. this project doesn't contain any actual code -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>${skip.integration.tests}</skipTests>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>verify</id>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skip>${skip.integration.tests}</skip>
                     <forkCount>1</forkCount>
-                    <excludes>
-                        <exclude>**/*IntegrationTest.java</exclude>
-                    </excludes>
                     <includes>
-                        <include>**/*Spec.class</include>
-                        <include>**/*Test.class</include>
+                        <include>**/*Spec.java</include>
+                        <include>**/*Test.java</include>
+                        <include>**/*IT.java</include>
                     </includes>
                     <systemProperties>
                         <property>
                             <name>log4j.configuration</name>
-                            <value>log4j.xml</value>
+                            <value>log4j2.xml</value>
                         </property>
                     </systemProperties>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>docker</id>
+            <properties>
+                <gl.baseuri>http://${it.graylog.docker.api.host}:${it.graylog.docker.api.port}</gl.baseuri>
+                <gl.port>${it.graylog.docker.api.port}</gl.port>
+                <mongodb.host>${it.mongodb.docker.host}</mongodb.host>
+                <mongodb.port>${it.mongodb.docker.port}</mongodb.port>
+                <mongodb.database>${it.mongodb.docker.database}</mongodb.database>
+                <es.host>${it.elasticsearch.docker.tcp.host}</es.host>
+                <es.port>${it.elasticsearch.docker.tcp.port}</es.port>
+                <es.cluster.name>${it.elasticsearch.cluster_name}</es.cluster.name>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <skip>${skip.integration.tests}</skip>
+                            <systemPropertyVariables>
+                                <gl.baseuri>http://${it.graylog.docker.api.host}:${it.graylog.docker.api.port}</gl.baseuri>
+                                <gl.port>${it.graylog.docker.api.port}</gl.port>
+                                <mongodb.host>${it.mongodb.docker.host}</mongodb.host>
+                                <mongodb.port>${it.mongodb.docker.port}</mongodb.port>
+                                <mongodb.database>${it.mongodb.docker.database}</mongodb.database>
+                                <es.host>${it.elasticsearch.docker.tcp.host}</es.host>
+                                <es.port>${it.elasticsearch.docker.tcp.port}</es.port>
+                                <es.cluster.name>${it.elasticsearch.cluster_name}</es.cluster.name>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jolokia</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <configuration>
+                            <logDate>ISO8601</logDate>
+                            <skipTags>true</skipTags>
+                            <verbose>true</verbose>
+                            <images>
+                                <image>
+                                    <name>graylog-integration-test</name>
+                                    <alias>graylog</alias>
+                                    <build>
+                                        <from>java:8u66-jre</from>
+                                        <ports>
+                                            <port>12900</port>
+                                            <port>9350</port>
+                                        </ports>
+                                        <cmd>
+                                            <shell>/maven/bin/graylog-test</shell>
+                                        </cmd>
+                                        <assembly>
+                                            <descriptor>assembly.xml</descriptor>
+                                        </assembly>
+                                        <optimise>true</optimise>
+                                        <runCmds>
+                                            <run>tar --strip-components=1 -xzf /maven/graylog-${project.version}-*.tar.gz -C /maven</run>
+                                        </runCmds>
+                                    </build>
+                                    <run>
+                                        <env>
+                                            <GRAYLOG_CONF>/maven/graylog.conf</GRAYLOG_CONF>
+                                            <GRAYLOG_ELASTICSEARCH_HOST>_non_loopback_</GRAYLOG_ELASTICSEARCH_HOST>
+                                            <ES_CLUSTER_NAME>${it.elasticsearch.cluster_name}</ES_CLUSTER_NAME>
+                                            <MONGODB_DATABASE>${it.mongodb.docker.database}</MONGODB_DATABASE>
+                                        </env>
+                                        <ports>
+                                            <port>+it.graylog.docker.api.host:it.graylog.docker.api.port:12900</port>
+                                            <port>+it.graylog.docker.elasticsearch.host:it.graylog.docker.elasticsearch.port:9350</port>
+                                        </ports>
+                                        <links>
+                                            <link>elasticsearch:es</link>
+                                            <link>mongodb:mongo</link>
+                                        </links>
+                                        <wait>
+                                            <log>org.graylog2.bootstrap.ServerBootstrap - Graylog server up and running.</log>
+                                            <time>60000</time>
+                                            <shutdown>10000</shutdown>
+                                        </wait>
+                                        <log>
+                                            <prefix>GRAYLOG</prefix>
+                                            <color>magenta</color>
+                                        </log>
+                                    </run>
+                                </image>
+                                <image>
+                                    <alias>elasticsearch</alias>
+                                    <name>${it.elasticsearch.docker.image}:${it.elasticsearch.docker.version}</name>
+                                    <run>
+                                        <ports>
+                                            <port>+it.elasticsearch.docker.http.host:it.elasticsearch.docker.http.port:9200</port>
+                                            <port>+it.elasticsearch.docker.tcp.host:it.elasticsearch.docker.tcp.port:9300</port>
+                                        </ports>
+                                        <cmd>elasticsearch -Des.cluster.name=${it.elasticsearch.cluster_name} -Des.network.host=_non_loopback_ -Des.action.auto_create_index=false</cmd>
+                                        <wait>
+                                            <http>
+                                                <url>http://${it.elasticsearch.docker.http.host}:${it.elasticsearch.docker.http.port}</url>
+                                                <method>GET</method>
+                                                <status>200</status>
+                                            </http>
+                                            <time>10000</time>
+                                            <shutdown>1000</shutdown>
+                                        </wait>
+                                        <log>
+                                            <prefix>ES</prefix>
+                                            <color>green</color>
+                                        </log>
+                                    </run>
+                                </image>
+                                <image>
+                                    <alias>mongodb</alias>
+                                    <name>${it.mongodb.docker.image}:${it.mongodb.docker.version}</name>
+                                    <run>
+                                        <ports>
+                                            <port>+it.mongodb.docker.host:it.mongodb.docker.port:27017</port>
+                                        </ports>
+                                        <cmd>mongod --smallfiles</cmd>
+                                        <wait>
+                                            <log>\[initandlisten\] waiting for connections on port 27017</log>
+                                            <time>10000</time>
+                                            <shutdown>1000</shutdown>
+                                        </wait>
+                                        <log>
+                                            <prefix>MONGO</prefix>
+                                            <color>blue</color>
+                                        </log>
+                                    </run>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>start</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                    <goal>start</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>stop</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
