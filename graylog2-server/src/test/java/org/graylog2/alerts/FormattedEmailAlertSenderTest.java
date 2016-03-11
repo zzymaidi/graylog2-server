@@ -16,11 +16,11 @@
  */
 package org.graylog2.alerts;
 
-import org.graylog2.configuration.EmailConfiguration;
+import org.graylog2.alarmcallbacks.EmailAlarmConfig;
 import org.graylog2.notifications.NotificationService;
 import org.graylog2.plugin.Message;
-import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.alarms.AlertCondition;
+import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.plugin.streams.Stream;
 import org.graylog2.plugin.system.NodeId;
@@ -50,26 +50,31 @@ public class FormattedEmailAlertSenderTest {
     @Mock
     private NotificationService mockNotificationService;
     @Mock
+    private ClusterConfigService clusterConfigService;
+    @Mock
     private NodeId mockNodeId;
 
     @Test
     public void buildSubjectUsesCustomSubject() throws Exception {
         Configuration pluginConfig = new Configuration(Collections.<String, Object>singletonMap("subject", "Test"));
-        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(new EmailConfiguration(), mockStreamRuleService,
+        EmailAlarmConfig config = EmailAlarmConfig.create(true, "localhost", 25, false, false, false, null, null, null, "", null);
+        when(clusterConfigService.get(EmailAlarmConfig.class)).thenReturn(config);
+        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(clusterConfigService, mockStreamRuleService,
                 mockUserService, mockNotificationService, mockNodeId);
         emailAlertSender.initialize(pluginConfig);
 
         Stream stream = mock(Stream.class);
         AlertCondition.CheckResult checkResult = mock(AbstractAlertCondition.CheckResult.class);
 
-        String subject = emailAlertSender.buildSubject(stream, checkResult, Collections.<Message>emptyList());
+        String subject = emailAlertSender.buildSubject(config, stream, checkResult, Collections.<Message>emptyList());
 
         assertThat(subject).isEqualTo("Test");
     }
 
     @Test
     public void buildSubjectUsesDefaultSubjectIfConfigDoesNotExist() throws Exception {
-        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(new EmailConfiguration(), mockStreamRuleService,
+        EmailAlarmConfig config = EmailAlarmConfig.create(true, "localhost", 25, false, false, false, null, null, null, "", null);
+        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(clusterConfigService, mockStreamRuleService,
                 mockUserService, mockNotificationService, mockNodeId);
 
         Stream stream = mock(Stream.class);
@@ -77,7 +82,7 @@ public class FormattedEmailAlertSenderTest {
 
         AlertCondition.CheckResult checkResult = mock(AbstractAlertCondition.CheckResult.class);
         when(checkResult.getResultDescription()).thenReturn("This is the alert description.");
-        String subject = emailAlertSender.buildSubject(stream, checkResult, Collections.<Message>emptyList());
+        String subject = emailAlertSender.buildSubject(config, stream, checkResult, Collections.<Message>emptyList());
 
         assertThat(subject).isEqualTo("Graylog alert for stream: Stream Title: This is the alert description.");
     }
@@ -85,7 +90,7 @@ public class FormattedEmailAlertSenderTest {
     @Test
     public void buildBodyUsesCustomBody() throws Exception {
         Configuration pluginConfig = new Configuration(Collections.<String, Object>singletonMap("body", "Test: ${stream.id}"));
-        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(new EmailConfiguration(), mockStreamRuleService,
+        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(clusterConfigService, mockStreamRuleService,
                 mockUserService, mockNotificationService, mockNodeId);
         emailAlertSender.initialize(pluginConfig);
 
@@ -99,14 +104,14 @@ public class FormattedEmailAlertSenderTest {
         when(checkResult.getTriggeredAt()).thenReturn(new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC));
         when(checkResult.getTriggeredCondition()).thenReturn(alertCondition);
 
-        String body = emailAlertSender.buildBody(stream, checkResult, Collections.<Message>emptyList());
+        String body = emailAlertSender.buildBody(stream, checkResult, Collections.<Message>emptyList(), URI.create("http://localhost"));
 
         assertThat(body).isEqualTo("Test: 123456");
     }
 
     @Test
     public void buildBodyUsesDefaultBodyIfConfigDoesNotExist() throws Exception {
-        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(new EmailConfiguration(), mockStreamRuleService,
+        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(clusterConfigService, mockStreamRuleService,
                 mockUserService, mockNotificationService, mockNodeId);
 
         Stream stream = mock(Stream.class);
@@ -119,7 +124,7 @@ public class FormattedEmailAlertSenderTest {
         when(checkResult.getTriggeredAt()).thenReturn(new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC));
         when(checkResult.getTriggeredCondition()).thenReturn(alertCondition);
 
-        String body = emailAlertSender.buildBody(stream, checkResult, Collections.<Message>emptyList());
+        String body = emailAlertSender.buildBody(stream, checkResult, Collections.<Message>emptyList(), URI.create("http://localhost"));
 
         assertThat(body).containsSequence(
                 "Date: 2015-01-01T00:00:00.000Z\n",
@@ -130,13 +135,7 @@ public class FormattedEmailAlertSenderTest {
 
     @Test
     public void buildBodyContainsURLIfWebInterfaceURLIsSet() throws Exception {
-        final EmailConfiguration configuration = new EmailConfiguration() {
-            @Override
-            public URI getWebInterfaceUri() {
-                return URI.create("https://localhost");
-            }
-        };
-        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(configuration, mockStreamRuleService,
+        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(clusterConfigService, mockStreamRuleService,
                 mockUserService, mockNotificationService, mockNodeId);
 
         Stream stream = mock(Stream.class);
@@ -149,20 +148,14 @@ public class FormattedEmailAlertSenderTest {
         when(checkResult.getTriggeredAt()).thenReturn(new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC));
         when(checkResult.getTriggeredCondition()).thenReturn(alertCondition);
 
-        String body = emailAlertSender.buildBody(stream, checkResult, Collections.<Message>emptyList());
+        String body = emailAlertSender.buildBody(stream, checkResult, Collections.<Message>emptyList(), URI.create("https://localhost"));
 
         assertThat(body).contains("Stream URL: https://localhost/streams/123456/");
     }
 
     @Test
     public void buildBodyContainsInfoMessageIfWebInterfaceURLIsNotSet() throws Exception {
-        final EmailConfiguration configuration = new EmailConfiguration() {
-            @Override
-            public URI getWebInterfaceUri() {
-                return null;
-            }
-        };
-        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(configuration, mockStreamRuleService,
+        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(clusterConfigService, mockStreamRuleService,
                 mockUserService, mockNotificationService, mockNodeId);
 
         Stream stream = mock(Stream.class);
@@ -175,20 +168,14 @@ public class FormattedEmailAlertSenderTest {
         when(checkResult.getTriggeredAt()).thenReturn(new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC));
         when(checkResult.getTriggeredCondition()).thenReturn(alertCondition);
 
-        String body = emailAlertSender.buildBody(stream, checkResult, Collections.<Message>emptyList());
+        String body = emailAlertSender.buildBody(stream, checkResult, Collections.<Message>emptyList(), null);
 
         assertThat(body).contains("Stream URL: Please configure 'transport_email_web_interface_url' in your Graylog configuration file.");
     }
 
     @Test
     public void buildBodyContainsInfoMessageIfWebInterfaceURLIsIncomplete() throws Exception {
-        final EmailConfiguration configuration = new EmailConfiguration() {
-            @Override
-            public URI getWebInterfaceUri() {
-                return URI.create("");
-            }
-        };
-        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(configuration, mockStreamRuleService,
+        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(clusterConfigService, mockStreamRuleService,
                 mockUserService, mockNotificationService, mockNodeId);
 
         Stream stream = mock(Stream.class);
@@ -201,14 +188,14 @@ public class FormattedEmailAlertSenderTest {
         when(checkResult.getTriggeredAt()).thenReturn(new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC));
         when(checkResult.getTriggeredCondition()).thenReturn(alertCondition);
 
-        String body = emailAlertSender.buildBody(stream, checkResult, Collections.<Message>emptyList());
+        String body = emailAlertSender.buildBody(stream, checkResult, Collections.<Message>emptyList(), URI.create(""));
 
         assertThat(body).contains("Stream URL: Please configure 'transport_email_web_interface_url' in your Graylog configuration file.");
     }
 
     @Test
     public void defaultBodyTemplateDoesNotShowBacklogIfBacklogIsEmpty() throws Exception {
-        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(new EmailConfiguration(), mockStreamRuleService,
+        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(clusterConfigService, mockStreamRuleService,
                 mockUserService, mockNotificationService, mockNodeId);
 
         Stream stream = mock(Stream.class);
@@ -221,7 +208,7 @@ public class FormattedEmailAlertSenderTest {
         when(checkResult.getTriggeredAt()).thenReturn(new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC));
         when(checkResult.getTriggeredCondition()).thenReturn(alertCondition);
 
-        String body = emailAlertSender.buildBody(stream, checkResult, Collections.<Message>emptyList());
+        String body = emailAlertSender.buildBody(stream, checkResult, Collections.<Message>emptyList(), URI.create("http://localhost"));
 
         assertThat(body)
                 .contains("<No backlog>\n")
@@ -230,7 +217,7 @@ public class FormattedEmailAlertSenderTest {
 
     @Test
     public void defaultBodyTemplateShowsBacklogIfBacklogIsNotEmpty() throws Exception {
-        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(new EmailConfiguration(), mockStreamRuleService,
+        FormattedEmailAlertSender emailAlertSender = new FormattedEmailAlertSender(clusterConfigService, mockStreamRuleService,
                 mockUserService, mockNotificationService, mockNodeId);
 
         Stream stream = mock(Stream.class);
@@ -244,7 +231,7 @@ public class FormattedEmailAlertSenderTest {
         when(checkResult.getTriggeredCondition()).thenReturn(alertCondition);
 
         Message message = new Message("Test", "source", new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC));
-        String body = emailAlertSender.buildBody(stream, checkResult, Collections.singletonList(message));
+        String body = emailAlertSender.buildBody(stream, checkResult, Collections.singletonList(message), URI.create("http://localhost"));
 
         assertThat(body)
                 .doesNotContain("<No backlog>\n")

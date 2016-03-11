@@ -17,10 +17,11 @@
 package org.graylog2.alerts;
 
 import com.floreysoft.jmte.Engine;
-import org.graylog2.configuration.EmailConfiguration;
+import org.graylog2.alarmcallbacks.EmailAlarmConfig;
 import org.graylog2.notifications.NotificationService;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.alarms.AlertCondition;
+import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.plugin.streams.Stream;
 import org.graylog2.plugin.system.NodeId;
@@ -28,6 +29,7 @@ import org.graylog2.shared.users.UserService;
 import org.graylog2.streams.StreamRuleService;
 
 import javax.inject.Inject;
+import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -60,12 +62,12 @@ public class FormattedEmailAlertSender extends StaticEmailAlertSender implements
     private Configuration pluginConfig;
 
     @Inject
-    public FormattedEmailAlertSender(EmailConfiguration configuration,
+    public FormattedEmailAlertSender(ClusterConfigService clusterConfigService,
                                      StreamRuleService streamRuleService,
                                      UserService userService,
                                      NotificationService notificationService,
                                      NodeId nodeId) {
-        super(configuration, streamRuleService, userService, notificationService, nodeId);
+        super(clusterConfigService, streamRuleService, userService, notificationService, nodeId);
     }
 
     @Override
@@ -75,7 +77,7 @@ public class FormattedEmailAlertSender extends StaticEmailAlertSender implements
     }
 
     @Override
-    protected String buildSubject(Stream stream, AlertCondition.CheckResult checkResult, List<Message> backlog) {
+    protected String buildSubject(EmailAlarmConfig config, Stream stream, AlertCondition.CheckResult checkResult, List<Message> backlog) {
         final String template;
         if (pluginConfig == null || pluginConfig.getString("subject") == null) {
             template = "Graylog alert for stream: ${stream.title}: ${check_result.resultDescription}";
@@ -83,30 +85,28 @@ public class FormattedEmailAlertSender extends StaticEmailAlertSender implements
             template = pluginConfig.getString("subject");
         }
 
-        Map<String, Object> model = getModel(stream, checkResult, backlog);
-        Engine engine = new Engine();
-
+        final Map<String, Object> model = getModel(stream, checkResult, backlog, config.webInterfaceUri());
         return engine.transform(template, model);
     }
 
     @Override
-    protected String buildBody(Stream stream, AlertCondition.CheckResult checkResult, List<Message> backlog) {
+    protected String buildBody(Stream stream, AlertCondition.CheckResult checkResult, List<Message> backlog, URI webInterfaceUri) {
         final String template;
         if (pluginConfig == null || pluginConfig.getString("body") == null) {
             template = bodyTemplate;
         } else {
             template = pluginConfig.getString("body");
         }
-        Map<String, Object> model = getModel(stream, checkResult, backlog);
 
+        final Map<String, Object> model = getModel(stream, checkResult, backlog, webInterfaceUri);
         return engine.transform(template, model);
     }
 
-    private Map<String, Object> getModel(Stream stream, AlertCondition.CheckResult checkResult, List<Message> backlog) {
+    private Map<String, Object> getModel(Stream stream, AlertCondition.CheckResult checkResult, List<Message> backlog, URI webInterfaceUri) {
         Map<String, Object> model = new HashMap<>();
         model.put("stream", stream);
         model.put("check_result", checkResult);
-        model.put("stream_url", buildStreamDetailsURL(configuration.getWebInterfaceUri(), checkResult, stream));
+        model.put("stream_url", buildStreamDetailsURL(webInterfaceUri, checkResult, stream));
 
         final List<Message> messages = firstNonNull(backlog, Collections.<Message>emptyList());
         model.put("backlog", messages);
