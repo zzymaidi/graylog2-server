@@ -112,7 +112,7 @@
                 <version>${gson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.graylog.jest</groupId>
+                <groupId>io.searchbox</groupId>
                 <artifactId>jest</artifactId>
                 <version>${jest.version}</version>
                 <exclusions>
