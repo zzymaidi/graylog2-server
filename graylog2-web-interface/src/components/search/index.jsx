@@ -20,6 +20,7 @@ export { default as MessageTableEntry } from './MessageTableEntry';
 export { default as MessageTablePaginator } from './MessageTablePaginator';
 export { default as NoSearchResults } from './NoSearchResults';
 export { default as QuerySidebar } from './QuerySidebar';
+export { default as QueryTreeNode } from './QueryTreeNode';
 export { default as RefreshControls } from './RefreshControls';
 export { default as ResultTable } from './ResultTable';
 export { default as SavedSearchControls } from './SavedSearchControls';

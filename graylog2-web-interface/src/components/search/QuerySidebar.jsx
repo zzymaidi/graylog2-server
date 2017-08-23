@@ -6,44 +6,26 @@ import { Spinner } from 'components/common';
 
 import CombinedProvider from 'injection/CombinedProvider';
 
-const { QueryStore, QueryActions } = CombinedProvider.get('Query');
+const { QueryTreeStore, QueryTreeActions } = CombinedProvider.get('QueryTree');
 
 const QuerySidebar = React.createClass({
-  mixins: [Reflux.connect(QueryStore)],
+  mixins: [Reflux.connect(QueryTreeStore)],
 
   getInitialState() {
-    return {
-      tree: [{
-        title: ({ node }) => <span style={{ color: node.disabled ? '#bbbbbb' : 'inherit' }}><i className="fa fa-binoculars" /> Query: "*"</span>,
-        type: 'query',
-        noDragging: true,
-        expanded: true,
-        children: [{
-          title: ({ node }) => <span style={{ color: node.disabled ? '#bbbbbb' : 'inherit' }}><i className="fa fa-compress" /> Aggregation: Top-N</span>,
-          type: 'aggregation',
-          subtitle: 'Limit: 5',
-          expanded: true,
-          children: [{
-            title: ({ node }) => <span style={{ color: node.disabled ? '#bbbbbb' : 'inherit' }}><i className="fa fa-line-chart" /> Graph: Pie Chart</span>,
-            type: 'graph',
-            expanded: true,
-          }],
-        }],
-      }],
-    };
+    return {};
   },
   _canDrop(args) {
     const { node, nextParent } = args;
 
     switch (node.type) {
       case 'query': return false;
-      case 'aggregation': return nextParent.type !== 'graph';
-      case 'graph': return true;
+      case 'aggregation': return nextParent !== null && nextParent.type !== 'graph';
+      case 'graph': return nextParent !== null;
       default: return true;
     }
   },
   render() {
-    if (!this.state.queries) {
+    if (!this.state.tree) {
       return <Spinner />;
     }
     const getNodeKey = ({ treeIndex }) => treeIndex;
@@ -66,7 +48,7 @@ const QuerySidebar = React.createClass({
                             </button>,
                           ],
                         })}
-                        onChange={(newTree) => { this.setState({ tree: newTree }); }} />
+                        onChange={QueryTreeActions.update} />
         </div>
       </div>
     );
