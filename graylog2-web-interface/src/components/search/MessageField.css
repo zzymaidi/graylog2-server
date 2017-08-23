@@ -1,0 +1,9 @@
+:local(.message_field_key:hover i) {
+    display: inline;
+}
+:local(.message_field_key:hover span) {
+    cursor:pointer;
+}
+:local(.message_field_key i) {
+    display: none;
+}

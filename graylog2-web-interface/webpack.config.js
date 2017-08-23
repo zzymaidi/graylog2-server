@@ -72,6 +72,12 @@ const webpackConfig = {
       vendorModule: () => JSON.parse(fs.readFileSync(path.resolve(ROOT_PATH, 'build/vendor-module.json'), 'utf8')),
       chunksSortMode: (c1, c2) => {
         // Render the polyfill chunk first
+        if (c1.names[0] === 'reacthot') {
+          return -1;
+        }
+        if (c2.names[0] === 'reacthot') {
+          return 1;
+        }
         if (c1.names[0] === 'polyfill') {
           return -1;
         }

@@ -48,8 +48,8 @@ const MessageFieldDescription = React.createClass({
   },
   _getFormattedTerms() {
     const termsMarkup = [];
-    this.state.messageTerms.forEach((term, idx) => {
-      termsMarkup.push(<span key={idx} className="message-terms">{term}</span>);
+    this.state.messageTerms.forEach((term) => {
+      termsMarkup.push(<span key={term} className="message-terms">{term}</span>);
     });
 
     return termsMarkup;

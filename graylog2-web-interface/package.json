@@ -46,6 +46,7 @@
     "react-grid-layout": "^0.14.3",
     "react-overlays": "^0.6.5",
     "react-select": "^0.8.2",
+    "react-sortable-tree": "^1.2.0",
     "rickshaw": "^1.5.1",
     "sockjs-client": "1.1.x",
     "string": "^3.3.1",

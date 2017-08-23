@@ -231,16 +231,6 @@ const MessageDetail = React.createClass({
     }
 
     return (<div>
-      <Row className="row-sm">
-        <Col md={12}>
-          {this._formatMessageActions()}
-          <h3 className="message-details-title">
-            <i className="fa fa-envelope" />
-            &nbsp;
-            {messageTitle}
-          </h3>
-        </Col>
-      </Row>
       <Row>
         <Col md={3}>
           <dl className="message-details">
