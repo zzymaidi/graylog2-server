@@ -4,7 +4,7 @@ import Immutable from 'immutable';
 import { Col, Row } from 'react-bootstrap';
 
 import { LoadingIndicator } from 'components/common';
-import { LegacyHistogram, NoSearchResults, QuerySidebar, ResultTable, SearchSidebar } from 'components/search';
+import { LegacyHistogram, NoSearchResults, ResultTable, SearchSidebar } from 'components/search';
 
 import StoreProvider from 'injection/StoreProvider';
 const SearchStore = StoreProvider.getStore('Search');
@@ -182,9 +182,35 @@ const SearchResult = React.createClass({
     return (
       <Row id="main-content-search">
         <Col ref="opa" md={3} sm={12} id="sidebar">
-          <QuerySidebar />
+          <SearchSidebar result={this.props.result}
+                         builtQuery={this.props.builtQuery}
+                         selectedFields={this.state.selectedFields}
+                         fields={this._fields()}
+                         fieldAnalyzers={this._fieldAnalyzers()}
+                         showAllFields={this.state.showAllFields}
+                         togglePageFields={this.togglePageFields}
+                         onFieldToggled={this.onFieldToggled}
+                         onFieldAnalyzer={this.addFieldAnalyzer}
+                         predefinedFieldSelection={this.predefinedFieldSelection}
+                         showHighlightToggle={anyHighlightRanges}
+                         shouldHighlight={this.state.shouldHighlight}
+                         toggleShouldHighlight={this._toggleShouldHighlight}
+                         currentSavedSearch={SearchStore.savedSearch}
+                         searchInStream={this.props.searchInStream}
+                         permissions={this.props.permissions}
+                         loadingSearch={this.props.loadingSearch}
+          />
         </Col>
         <Col md={9} sm={12} id="main-content-sidebar">
+          {this._fieldAnalyzerComponents(analyzer => this._shouldRenderAboveHistogram(analyzer))}
+
+          <LegacyHistogram formattedHistogram={this.props.formattedHistogram}
+                           histogram={this.props.histogram}
+                           permissions={this.props.permissions}
+                           stream={this.props.searchInStream} />
+
+          {this._fieldAnalyzerComponents(analyzer => this._shouldRenderBelowHistogram(analyzer))}
+
           <ResultTable messages={this.props.result.messages}
                        page={SearchStore.page}
                        selectedFields={this.state.selectedFields}

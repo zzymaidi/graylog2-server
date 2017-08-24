@@ -72,6 +72,7 @@ const AppRouter = React.createClass({
         <Route path={Routes.STARTPAGE} component={App}>
           <IndexRoute component={StartPage} />
           <Route component={AppWithSearchBar}>
+            <Route path={Routes.SEARCH2} component={SearchPage} />
             <Route path={Routes.message_show(':index', ':messageId')} component={ShowMessagePage} />
             <Route path={Routes.SOURCES} component={SourcesPage} />
             <Route path={Routes.stream_search(':streamId')} component={StreamSearchPage} />

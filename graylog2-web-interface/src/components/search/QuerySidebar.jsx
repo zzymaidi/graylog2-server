@@ -1,6 +1,7 @@
 import React from 'react';
 import Reflux from 'reflux';
 import SortableTree, { changeNodeAtPath } from 'react-sortable-tree';
+import { Button, ButtonGroup } from 'react-bootstrap';
 
 import { Spinner } from 'components/common';
 
@@ -35,6 +36,16 @@ const QuerySidebar = React.createClass({
     };
     return (
       <span>
+        <span style={{ 'font-size': '18px' }}>Query Tree:</span>
+        <span style={{ float: 'right' }}>
+          <ButtonGroup>
+            <Button bsSize="xsmall" onClick={() => QueryTreeActions.preset('rootQuery')}>Initial</Button>
+            <Button bsSize="xsmall" onClick={() => QueryTreeActions.preset('one')}>1</Button>
+            <Button bsSize="xsmall" onClick={() => QueryTreeActions.preset('two')}>2</Button>
+            <Button bsSize="xsmall" onClick={() => QueryTreeActions.preset('three')}>3</Button>
+            <Button bsSize="xsmall" onClick={() => QueryTreeActions.preset('fullFrenzy')}>Full</Button>
+          </ButtonGroup>
+        </span>
         <SortableTree treeData={this.state.tree}
                       canDrag={({ node }) => !node.noDragging}
                       canDrop={this._canDrop}
