@@ -34,5 +34,6 @@ window.onload = () => {
     module.hot.accept('routing/AppFacade', () => {
       renderAppContainer(appContainer);
     });
+    module.hot.decline('injection/CombinedProvider');
   }
 };

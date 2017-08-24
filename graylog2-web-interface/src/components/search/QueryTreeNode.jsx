@@ -28,7 +28,7 @@ const QueryTreeNode = ({ node }) => (
 QueryTreeNode.propTypes = {
   node: PropTypes.shape({
     type: PropTypes.string.isRequired,
-    disabled: PropTypes.bool.isRequired,
+    disabled: PropTypes.bool,
     parameters: PropTypes.object.isRequired,
   }).isRequired,
 };

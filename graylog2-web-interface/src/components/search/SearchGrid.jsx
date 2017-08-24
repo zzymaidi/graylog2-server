@@ -1,8 +1,9 @@
 import React from 'react';
 
-import { ReactGridContainer } from 'components/common';
+import { ReactGridContainer, Spinner } from 'components/common';
 import { QuerySidebar, SearchWidget } from 'components/search';
 import style from 'pages/ShowDashboardPage.css';
+import { MessageList } from 'components/search/widgets';
 
 import CombinedProvider from 'injection/CombinedProvider';
 const { SearchStore } = CombinedProvider.get('Search');
@@ -54,6 +55,15 @@ const SearchGrid = React.createClass({
     this.setState({ positions: newPositions });*/
   },
   render() {
+    const widgets = this.props.queryTree.filter(query => query.disabled === undefined || query.disabled === false).map(query => (
+      <div key={query.id} className={style.widgetContainer}>
+        <SearchWidget title={query.title({ node: query })} widgetId={query.id} onSizeChange={this._onWidgetSizeChange}>
+          {this.state.searchResults[query.id] ?
+            <MessageList data={this.state.searchResults[query.id].messages} config={{ pageSize: 20, fields: ['source', 'message'] }} /> :
+            <Spinner />}
+        </SearchWidget>
+      </div>
+    ));
     return (
       <div className="dashboard">
         <ReactGridContainer locked positions={this.state.positions} onPositionsChange={this._onPositionsChange}>
@@ -62,6 +72,7 @@ const SearchGrid = React.createClass({
               <QuerySidebar />
             </SearchWidget>
           </div>
+          {widgets}
         </ReactGridContainer>
       </div>
     );

@@ -21,7 +21,7 @@ const UniversalSearchStore = Reflux.createStore({
     const url = URLUtils.qualifyUrl(ApiRoutes.UniversalSearchApiController.search(type, query,
       timerangeParams, streamId, effectiveLimit, offset, sortField, sortOrder, decorate).url);
 
-    return fetch('GET', url).then((response) => {
+    return fetch('POST', url).then((response) => {
       const result = jQuery.extend({}, response);
       result.fields = response.fields.map((field) => {
         return {

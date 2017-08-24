@@ -41,6 +41,15 @@ const QueryTreeStore = Reflux.createStore({
         expanded: true,
       }],
     }],
+  }, {
+    title: renderTitle,
+    subtitle: renderSubtitle,
+    type: 'query',
+    id: 'rootquery-2',
+    parameters: { query: 'source:192.168.1.3', time_range: { type: 'relative', relative: 300 } },
+    noDragging: true,
+    expanded: true,
+    children: [],
   }],
   init() {
     this.trigger({ tree: this.tree });

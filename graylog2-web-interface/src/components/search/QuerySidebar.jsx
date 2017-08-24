@@ -29,9 +29,9 @@ const QuerySidebar = React.createClass({
       return <Spinner />;
     }
     const getNodeKey = ({ treeIndex }) => treeIndex;
-    const alertNodeInfo = ({ node, path, treeIndex }) => {
+    const disableNode = ({ node, path, treeIndex }) => {
       const newTree = changeNodeAtPath({ treeData: this.state.tree, path, getNodeKey, newNode: { ...node, disabled: !node.disabled }});
-      this.setState({ tree: newTree });
+      QueryTreeActions.update(newTree);
     };
     return (
       <span>
@@ -41,7 +41,7 @@ const QuerySidebar = React.createClass({
                       generateNodeProps={rowInfo => ({
                         buttons: [
                           <button style={{ verticalAlign: 'middle' }}
-                                  onClick={() => alertNodeInfo(rowInfo)}>
+                                  onClick={() => disableNode(rowInfo)}>
                             {rowInfo.node.disabled ? <i className="fa fa-search-plus" /> : <i className="fa fa-search-minus" />}
                           </button>,
                         ],

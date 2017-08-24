@@ -23,6 +23,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.glassfish.jersey.server.ChunkedOutput;
 import org.graylog2.decorators.DecoratorProcessor;
 import org.graylog2.indexer.results.ScrollResult;
@@ -48,6 +49,7 @@ import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -55,6 +57,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 @RequiresAuthentication
@@ -71,7 +74,7 @@ public class RelativeSearchResource extends SearchResource {
         super(searches, clusterConfigService, decoratorProcessor);
     }
 
-    @GET
+    @POST
     @Timed
     @ApiOperation(value = "Message search with relative timerange.",
             notes = "Search for messages in a relative timerange, specified as seconds from now. " +
@@ -89,13 +92,16 @@ public class RelativeSearchResource extends SearchResource {
             @ApiParam(name = "filter", value = "Filter", required = false) @QueryParam("filter") String filter,
             @ApiParam(name = "fields", value = "Comma separated list of fields to return", required = false) @QueryParam("fields") String fields,
             @ApiParam(name = "sort", value = "Sorting (field:asc / field:desc)", required = false) @QueryParam("sort") String sort,
-            @ApiParam(name = "decorate", value = "Run decorators on search result", required = false) @QueryParam("decorate") @DefaultValue("true") boolean decorate) {
+            @ApiParam(name = "decorate", value = "Run decorators on search result", required = false) @QueryParam("decorate") @DefaultValue("true") boolean decorate,
+            @ApiParam(name = "aggregations", value = "Include specified aggregations in search request", required = false) Map<String, Object> aggregations) {
         checkSearchPermission(filter, RestPermissions.SEARCHES_RELATIVE);
 
         final List<String> fieldList = parseOptionalFields(fields);
         final Sorting sorting = buildSorting(sort);
 
         final TimeRange timeRange = buildRelativeTimeRange(range);
+
+
         final SearchesConfig searchesConfig = SearchesConfig.builder()
                 .query(query)
                 .filter(filter)

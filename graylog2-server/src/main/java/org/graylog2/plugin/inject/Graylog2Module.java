@@ -413,6 +413,14 @@ public abstract class Graylog2Module extends AbstractModule {
         return MapBinder.newMapBinder(binder(), TypeLiteral.get(String.class), TypeLiteral.get(Object.class), JacksonSubTypes.class);
     }
 
+    protected Multibinder<JsonSerializer> customSerializerBinder() {
+        return Multibinder.newSetBinder(binder(), JsonSerializer.class);
+    }
+
+    protected void addSerializer(Class<? extends JsonSerializer> serializer) {
+        customSerializerBinder().addBinding().to(serializer);
+    }
+
     protected Multibinder<Migration> migrationsBinder() {
         return Multibinder.newSetBinder(binder(), Migration.class);
     }
