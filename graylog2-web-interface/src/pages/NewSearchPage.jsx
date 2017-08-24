@@ -47,8 +47,8 @@ const NewSearchPage = React.createClass({
                        savedSearches={[]} />
           </Row>
           <Row>
-            <Col md={3}>
-              <div className="content-col" style={{ top: undefined, position: undefined }}>
+            <Col md={3} style={{ 'padding-left': '0px', 'padding-right': '0px' }}>
+              <div className="content-col" style={{ top: undefined, position: undefined, 'margin-top': '0px' }}>
                 <div style={{ height: 400 }}>
                   <QuerySidebar />
                 </div>

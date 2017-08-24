@@ -98,11 +98,8 @@ const SearchGrid = React.createClass({
     ));
     const positions = this.state.positions;
     this.props.queryTree.filter(query => query.disabled === undefined || query.disabled === false).forEach((query) => {
-      if (positions[query.id]) {
-        positions[query.id].height = 1;
-        positions[query.id].width = 2;
-      } else {
-        positions[query.id] = { height: 1, width: 2};
+      if (!positions[query.id]) {
+        positions[query.id] = { height: 2, width: 2};
       }
     });
 
@@ -134,14 +131,11 @@ const SearchGrid = React.createClass({
         });
         widgets.push(<div key={node.id} className={style.widgetContainer}>
           <SearchWidget title={node.title({ node: node })} widgetId={node.id} onSizeChange={this._onWidgetSizeChange}>
-            <TopNVisualization data={data} config={{ show_pie_chart: true, show_data_table: false }} />
+            <TopNVisualization data={data} config={{ show_pie_chart: true, show_data_table: true }} />
           </SearchWidget>
         </div>);
       }
-      if (positions[node.id]) {
-        positions[node.id].height = 2;
-        positions[node.id].width = 1;
-      } else {
+      if (!positions[node.id]) {
         positions[node.id] = { height: 2, width: 1};
       }
     });

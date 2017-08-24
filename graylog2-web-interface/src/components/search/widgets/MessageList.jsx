@@ -85,12 +85,12 @@ const MessageList = React.createClass({
                 </thead>
                 {messageSlice.map((message) => {
                   return (
-                    <MessageTableEntry key={message.id}
+                    <MessageTableEntry key={`${message.index}-${message.id}`}
                                        disableSurroundingSearch
                                        message={message}
                                        showMessageRow={selectedFields.contains('message')}
                                        selectedFields={selectedColumns}
-                                       expanded={this.state.expandedMessages.contains(message.id)}
+                                       expanded={this.state.expandedMessages.contains(`${message.index}-${message.id}`)}
                                        toggleDetail={this._toggleMessageDetail}
                                        inputs={new Immutable.Map()}
                                        streams={new Immutable.Map()}
