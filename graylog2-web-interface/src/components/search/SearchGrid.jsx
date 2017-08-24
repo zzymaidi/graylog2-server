@@ -53,18 +53,22 @@ const SearchGrid = React.createClass({
   },
   _onPositionsChange(positions) {
     const newPositions = {};
-    positions.forEach(position => {
+    positions.forEach((position) => {
       newPositions[position.id] = position;
     });
 
     this.setState({ positions: newPositions });
   },
   _onWidgetSizeChange(widgetId, newSize) {
-    /*const newPositions = this.state.positions;
-    this.state.positions[widgetId].height = newSize.height;
-    this.state.positions[widgetId].width = newSize.width;
+    /* const newPositions = this.state.positions;
+    if (!newPositions[widgetId]) {
+      newPositions[widgetId] = { col: 0, row: 0, height: newSize.height, width: newSize.width };
+    } else {
+      newPositions[widgetId].height = newSize.height;
+      newPositions[widgetId].width = newSize.width;
+    }
 
-    this.setState({ positions: newPositions });*/
+    this.setState({ positions: newPositions }); */
   },
   _getAggregationsFromTree(tree) {
     const aggregations = [];
@@ -92,6 +96,15 @@ const SearchGrid = React.createClass({
         </SearchWidget>
       </div>
     ));
+    const positions = this.state.positions;
+    this.props.queryTree.filter(query => query.disabled === undefined || query.disabled === false).forEach((query) => {
+      if (positions[query.id]) {
+        positions[query.id].height = 1;
+        positions[query.id].width = 2;
+      } else {
+        positions[query.id] = { height: 1, width: 2};
+      }
+    });
 
     this._getAggregationsFromTree(this.props.queryTree).forEach((aggregation) => {
       const buckets = this.state.results[aggregation.id] ? this.state.results[aggregation.id].buckets : [];
@@ -125,15 +138,16 @@ const SearchGrid = React.createClass({
           </SearchWidget>
         </div>);
       }
+      if (positions[node.id]) {
+        positions[node.id].height = 2;
+        positions[node.id].width = 1;
+      } else {
+        positions[node.id] = { height: 2, width: 1};
+      }
     });
     return (
       <div className="dashboard">
-        <ReactGridContainer locked positions={this.state.positions} onPositionsChange={this._onPositionsChange}>
-          <div key="foo" className={style.widgetContainer}>
-            <SearchWidget title="Foo" widgetId="foo" onSizeChange={this._onWidgetSizeChange}>
-              <QuerySidebar />
-            </SearchWidget>
-          </div>
+        <ReactGridContainer locked={false} positions={positions} onPositionsChange={this._onPositionsChange}>
           {widgets}
         </ReactGridContainer>
       </div>

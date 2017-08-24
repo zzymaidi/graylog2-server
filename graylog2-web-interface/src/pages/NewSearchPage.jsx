@@ -1,9 +1,10 @@
 import React from 'react';
 import Reflux from 'reflux';
-import { Row } from 'react-bootstrap';
+import { Col, Row } from 'react-bootstrap';
 
 import { DocumentTitle, ReactGridContainer, Spinner } from 'components/common';
 import { LegacyHistogram, NoSearchResults, QuerySidebar, ResultTable, SearchBar, SearchGrid, SearchSidebar, SearchWidget } from 'components/search';
+import style from 'pages/ShowDashboardPage.css';
 
 import StoreProvider from 'injection/StoreProvider';
 const ConfigurationsStore = StoreProvider.getStore('Configurations');
@@ -40,11 +41,22 @@ const NewSearchPage = React.createClass({
     return (
       <DocumentTitle title="Search">
         <span>
-          <SearchBar onExecuteSearch={this._addSearch}
-                     config={this.state.searchesClusterConfig}
-                     savedSearches={[]} />
           <Row>
-            <SearchGrid queryTree={this.state.tree} />
+            <SearchBar onExecuteSearch={this._addSearch}
+                       config={this.state.searchesClusterConfig}
+                       savedSearches={[]} />
+          </Row>
+          <Row>
+            <Col md={3}>
+              <div className="content-col" style={{ top: undefined, position: undefined }}>
+                <div style={{ height: 400 }}>
+                  <QuerySidebar />
+                </div>
+              </div>
+            </Col>
+            <Col md={9}>
+              <SearchGrid queryTree={this.state.tree} />
+            </Col>
           </Row>
         </span>
       </DocumentTitle>
