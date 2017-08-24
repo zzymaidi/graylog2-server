@@ -17,16 +17,19 @@
 package org.graylog2.rest.resources.search;
 
 import com.codahale.metrics.annotation.Timed;
+import io.searchbox.core.search.aggregation.Aggregation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.glassfish.jersey.server.ChunkedOutput;
 import org.graylog2.decorators.DecoratorProcessor;
 import org.graylog2.indexer.results.ScrollResult;
+import org.graylog2.indexer.results.SearchResult;
 import org.graylog2.indexer.searches.Searches;
 import org.graylog2.indexer.searches.SearchesConfig;
 import org.graylog2.indexer.searches.Sorting;
@@ -55,10 +58,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiresAuthentication
 @Api(value = "Search/Relative", description = "Message search")
@@ -93,7 +98,7 @@ public class RelativeSearchResource extends SearchResource {
             @ApiParam(name = "fields", value = "Comma separated list of fields to return", required = false) @QueryParam("fields") String fields,
             @ApiParam(name = "sort", value = "Sorting (field:asc / field:desc)", required = false) @QueryParam("sort") String sort,
             @ApiParam(name = "decorate", value = "Run decorators on search result", required = false) @QueryParam("decorate") @DefaultValue("true") boolean decorate,
-            @ApiParam(name = "aggregations", value = "Include specified aggregations in search request", required = false) Map<String, Object> aggregations) {
+            @ApiParam(name = "aggregations", value = "Include specified aggregations in search request", required = false) Map<String, Map<String, Object>> aggregations) {
         checkSearchPermission(filter, RestPermissions.SEARCHES_RELATIVE);
 
         final List<String> fieldList = parseOptionalFields(fields);
@@ -101,6 +106,17 @@ public class RelativeSearchResource extends SearchResource {
 
         final TimeRange timeRange = buildRelativeTimeRange(range);
 
+        final List<AbstractAggregationBuilder> aggs;
+        if (aggregations != null && !aggregations.isEmpty()) {
+            aggs = aggregations.entrySet()
+                    .stream()
+                    .map(entry -> AggregationBuilders.terms(entry.getKey())
+                            .size(Integer.valueOf(String.valueOf(entry.getValue().get("limit"))))
+                            .field(String.valueOf(entry.getValue().get("field"))))
+                    .collect(Collectors.toList());
+        } else {
+            aggs = Collections.emptyList();
+        }
 
         final SearchesConfig searchesConfig = SearchesConfig.builder()
                 .query(query)
@@ -110,11 +126,17 @@ public class RelativeSearchResource extends SearchResource {
                 .limit(limit)
                 .offset(offset)
                 .sorting(sorting)
+                .aggregations(aggs)
                 .build();
 
         final Optional<String> streamId = Searches.extractStreamId(filter);
 
-        return buildSearchResponse(searches.search(searchesConfig), timeRange, decorate, streamId);
+        final SearchResult result = searches.search(searchesConfig);
+
+        final Map<String, Aggregation> aggregationResults = aggregations.keySet()
+                .stream()
+                .collect(Collectors.toMap(key -> key, key -> result.getAggregations().getTermsAggregation(key)));
+        return buildSearchResponse(result, timeRange, decorate, streamId, aggregationResults);
     }
 
     @GET

@@ -19,13 +19,16 @@ package org.graylog2.rest.resources.search.responses;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import io.searchbox.core.search.aggregation.Aggregation;
 import org.graylog.autovalue.WithBeanGetter;
 import org.graylog2.rest.models.messages.responses.ResultMessageSummary;
 import org.graylog2.rest.models.system.indexer.responses.IndexRangeSummary;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @JsonAutoDetect
@@ -63,6 +66,9 @@ public abstract class SearchResponse {
     @Nullable
     public abstract SearchDecorationStats decorationStats();
 
+    @JsonProperty
+    public abstract Map<String, Aggregation> aggregations();
+
     public abstract Builder toBuilder();
 
     public static Builder builder() {
@@ -77,7 +83,8 @@ public abstract class SearchResponse {
                                         long time,
                                         long totalResults,
                                         DateTime from,
-                                        DateTime to) {
+                                        DateTime to,
+                                        Map<String, Aggregation> aggregations) {
         return builder()
             .query(query)
             .builtQuery(builtQuery)
@@ -88,7 +95,20 @@ public abstract class SearchResponse {
             .totalResults(totalResults)
             .from(from)
             .to(to)
+            .aggregations(aggregations)
             .build();
+    }
+
+    public static SearchResponse create(String query,
+                                        String builtQuery,
+                                        Set<IndexRangeSummary> usedIndices,
+                                        List<ResultMessageSummary> messages,
+                                        Set<String> fields,
+                                        long time,
+                                        long totalResults,
+                                        DateTime from,
+                                        DateTime to) {
+        return create(query, builtQuery, usedIndices, messages, fields, time, totalResults, from, to, Collections.emptyMap());
     }
 
     @AutoValue.Builder
@@ -103,6 +123,7 @@ public abstract class SearchResponse {
         public abstract Builder from(DateTime from);
         public abstract Builder to(DateTime to);
         public abstract Builder decorationStats(SearchDecorationStats searchDecorationStats);
+        public abstract Builder aggregations(Map<String, Aggregation> aggregations);
         public abstract SearchResponse build();
     }
 }

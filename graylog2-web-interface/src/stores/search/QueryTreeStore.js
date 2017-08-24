@@ -23,7 +23,7 @@ const QueryTreeStore = Reflux.createStore({
       subtitle: renderSubtitle,
       type: 'aggregation',
       id: 'aggregation-1',
-      parameters: { type: 'top-n', limit: 5 },
+      parameters: { type: 'top-n', limit: 5, field: 'source' },
       expanded: true,
       children: [{
         title: renderTitle,
