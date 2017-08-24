@@ -91,7 +91,7 @@ const AppWithSearchBar = React.createClass({
     SearchStore.initializeFieldsFromHash();
 
     return (
-      <div className="container-fluid">
+      <div className="container-fluid" style={{ marginTop: '60px' }} >
         <SearchBar ref="searchBar" userPreferences={this.state.currentUser.preferences}
                    savedSearches={this.state.savedSearches}
                    config={this.state.searchesClusterConfig}
