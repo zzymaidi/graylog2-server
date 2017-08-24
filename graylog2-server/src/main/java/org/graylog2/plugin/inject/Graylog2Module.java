@@ -16,6 +16,7 @@
  */
 package org.graylog2.plugin.inject;
 
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.google.common.util.concurrent.Service;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;

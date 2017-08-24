@@ -1,0 +1,10 @@
+:local(.container) {
+    height: 100%;
+    text-align: center;
+    padding-bottom: 30px;
+}
+
+:local(.number) {
+    height: 100%;
+    width: 100%;
+}
