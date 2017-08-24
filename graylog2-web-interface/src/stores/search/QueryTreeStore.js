@@ -9,6 +9,8 @@ const QueryTreeActions = ActionsProvider.getActions('QueryTree');
 const renderTitle = ({ node }) => <QueryTreeNode node={node} />;
 const renderSubtitle = ({ node }) => <span>{JSON.stringify(node.parameters)}</span>;
 
+const secondQuery = 'source:192.168.1.3';
+const secondAggregationField = 'nf_src_address';
 const presets = {
   rootQuery: [{
     title: renderTitle,
@@ -77,7 +79,7 @@ const presets = {
     subtitle: renderSubtitle,
     type: 'query',
     id: 'rootquery-2',
-    parameters: { query: 'source:192.168.1.3', time_range: { type: 'relative', relative: 300 } },
+    parameters: { query: secondQuery, time_range: { type: 'relative', relative: 300 } },
     noDragging: true,
     expanded: true,
     children: [],
@@ -118,7 +120,7 @@ const presets = {
     subtitle: renderSubtitle,
     type: 'query',
     id: 'rootquery-2',
-    parameters: { query: 'source:192.168.1.3', time_range: { type: 'relative', relative: 300 } },
+    parameters: { query: secondQuery, time_range: { type: 'relative', relative: 300 } },
     noDragging: true,
     expanded: true,
     children: [
@@ -127,7 +129,7 @@ const presets = {
         subtitle: renderSubtitle,
         type: 'aggregation',
         id: 'aggregation-2',
-        parameters: { type: 'top-n', limit: 5, field: 'nf_src_address' },
+        parameters: { type: 'top-n', limit: 5, field: secondAggregationField },
         expanded: true,
         children: [],
       },
