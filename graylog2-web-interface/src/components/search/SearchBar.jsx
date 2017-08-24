@@ -36,6 +36,7 @@ const SearchBar = React.createClass({
   getDefaultProps() {
     return {
       displayRefreshControls: true,
+      userPreferences: {},
     };
   },
 

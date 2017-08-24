@@ -6,26 +6,34 @@ import ActionsProvider from 'injection/ActionsProvider';
 
 const QueryTreeActions = ActionsProvider.getActions('QueryTree');
 
+const renderTitle = ({ node }) => <QueryTreeNode node={node} />;
+const renderSubtitle = ({ node }) => <span>{JSON.stringify(node.parameters)}</span>;
 const QueryTreeStore = Reflux.createStore({
   listenables: [QueryTreeActions],
   tree: [{
-    title: ({ node }) => <QueryTreeNode node={node} title="*" />,
+    title: renderTitle,
+    subtitle: renderSubtitle,
     type: 'query',
+    parameters: { query: '*', time_range: { type: 'relative', relative: 300 } },
     noDragging: true,
     expanded: true,
     children: [{
-      title: ({ node }) => <QueryTreeNode node={node} title="Top-N" />,
+      title: renderTitle,
+      subtitle: renderSubtitle,
       type: 'aggregation',
-      subtitle: 'Limit: 5',
+      parameters: { type: 'top-n', limit: 5 },
       expanded: true,
       children: [{
-        title: ({ node }) => <QueryTreeNode node={node} title="Pie Chart" />,
+        title: renderTitle,
+        subtitle: renderSubtitle,
+        parameters: { type: 'pie' },
         type: 'graph',
         expanded: true,
       }, {
-        title: ({ node } ) => <QueryTreeNode node={node} title="Threshold exceeded" />,
+        title: renderTitle,
+        subtitle: renderSubtitle,
         type: 'alert',
-        subtitle: 'Threshold: 42',
+        parameters: { threshold: 42 },
         expanded: true,
       }],
     }],

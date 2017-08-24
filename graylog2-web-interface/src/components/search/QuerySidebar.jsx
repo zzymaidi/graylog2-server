@@ -34,23 +34,20 @@ const QuerySidebar = React.createClass({
       this.setState({ tree: newTree });
     };
     return (
-      <div className="content-col" style={{ top: undefined, position: undefined }}>
-        <h2>Queries:</h2>
-        <div style={{ height: 400 }}>
-          <SortableTree treeData={this.state.tree}
-                        canDrag={({ node }) => !node.noDragging}
-                        canDrop={this._canDrop}
-                        generateNodeProps={rowInfo => ({
-                          buttons: [
-                            <button style={{ verticalAlign: 'middle' }}
-                                    onClick={() => alertNodeInfo(rowInfo)}>
-                              {rowInfo.node.disabled ? <i className="fa fa-search-plus" /> : <i className="fa fa-search-minus" />}
-                            </button>,
-                          ],
-                        })}
-                        onChange={QueryTreeActions.update} />
-        </div>
-      </div>
+      <span>
+        <SortableTree treeData={this.state.tree}
+                      canDrag={({ node }) => !node.noDragging}
+                      canDrop={this._canDrop}
+                      generateNodeProps={rowInfo => ({
+                        buttons: [
+                          <button style={{ verticalAlign: 'middle' }}
+                                  onClick={() => alertNodeInfo(rowInfo)}>
+                            {rowInfo.node.disabled ? <i className="fa fa-search-plus" /> : <i className="fa fa-search-minus" />}
+                          </button>,
+                        ],
+                      })}
+                      onChange={QueryTreeActions.update} />
+      </span>
     );
   },
 });
