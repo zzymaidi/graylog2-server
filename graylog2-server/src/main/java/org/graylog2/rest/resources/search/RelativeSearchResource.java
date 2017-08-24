@@ -133,7 +133,7 @@ public class RelativeSearchResource extends SearchResource {
 
         final SearchResult result = searches.search(searchesConfig);
 
-        final Map<String, Aggregation> aggregationResults = aggregations.keySet()
+        final Map<String, Aggregation> aggregationResults = Optional.ofNullable(aggregations).orElse(Collections.emptyMap()).keySet()
                 .stream()
                 .collect(Collectors.toMap(key -> key, key -> result.getAggregations().getTermsAggregation(key)));
         return buildSearchResponse(result, timeRange, decorate, streamId, aggregationResults);

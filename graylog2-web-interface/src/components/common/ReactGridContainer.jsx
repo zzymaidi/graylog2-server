@@ -70,7 +70,7 @@ const ReactGridContainer = React.createClass({
         i: id,
         x: col ? Math.max(col - 1, 0) : 0,
         y: (row === undefined || row <= 0 ? Infinity : row - 1),
-        h: height || 1,
+        h: height || 2,
         w: width || 1,
       };
     });
