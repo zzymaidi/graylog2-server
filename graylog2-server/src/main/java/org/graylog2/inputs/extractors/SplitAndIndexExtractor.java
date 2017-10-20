@@ -32,6 +32,7 @@ public class SplitAndIndexExtractor extends Extractor {
     public final String splitChar;
     public final int index;
 
+    @SuppressWarnings("NullAway")
     public SplitAndIndexExtractor(MetricRegistry metricRegistry,
                                   String id,
                                   String title,
@@ -46,7 +47,7 @@ public class SplitAndIndexExtractor extends Extractor {
                                   String conditionValue) throws ReservedFieldException, ConfigurationException {
         super(metricRegistry, id, title, order, Type.SPLIT_AND_INDEX, cursorStrategy, sourceField, targetField, extractorConfig, creatorUserId, converters, conditionType, conditionValue);
 
-        if (extractorConfig == null || extractorConfig.get("index") == null || extractorConfig.get("split_by") == null) {
+        if (extractorConfig == null || !extractorConfig.containsKey("index") || !extractorConfig.containsKey("split_by")) {
             throw new ConfigurationException("Missing configuration fields. Required: index, split_by");
         }
 
